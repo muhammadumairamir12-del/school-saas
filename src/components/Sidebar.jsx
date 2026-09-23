@@ -6,15 +6,26 @@ import {
   CalendarCheck, 
   UserCheck, 
   Receipt,
-  GraduationCap
+  GraduationCap,
+  Megaphone,
+  CalendarDays,
+  NotebookPen,
+  ClipboardCheck,
+  X
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
-export default function Sidebar({ activeTab, setActiveTab, role }) {
+export default function Sidebar({ activeTab, setActiveTab, role, open, onClose }) {
+  const { setRole } = useAuth();
   const adminNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, color: '#1E5B8C' },
     { id: 'students', label: 'Students', icon: Users, color: '#D4A017' },
     { id: 'fees', label: 'Fees & Defaulters', icon: CreditCard, color: '#E91E8C' },
     { id: 'attendance', label: 'Attendance', icon: CalendarCheck, color: '#3B82F6' },
+    { id: 'notices', label: 'Notice Board', icon: Megaphone, color: '#0284C7' },
+    { id: 'timetable', label: 'Timetable', icon: CalendarDays, color: '#4F46E5' },
+    { id: 'homework', label: 'Homework', icon: NotebookPen, color: '#F97316' },
+    { id: 'exams', label: 'Exam Results', icon: ClipboardCheck, color: '#7C3AED' },
     { id: 'staff', label: 'Staff Management', icon: UserCheck, color: '#8B5CF6' },
     { id: 'expenses', label: 'Expenses', icon: Receipt, color: '#10B981' },
   ];
@@ -23,21 +34,46 @@ export default function Sidebar({ activeTab, setActiveTab, role }) {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, color: '#1E5B8C' },
     { id: 'students', label: 'My Students', icon: Users, color: '#D4A017' },
     { id: 'attendance', label: 'Mark Attendance', icon: CalendarCheck, color: '#3B82F6' },
+    { id: 'notices', label: 'Notice Board', icon: Megaphone, color: '#0284C7' },
+    { id: 'timetable', label: 'Timetable', icon: CalendarDays, color: '#4F46E5' },
+    { id: 'homework', label: 'Homework', icon: NotebookPen, color: '#F97316' },
+    { id: 'exams', label: 'Exam Results', icon: ClipboardCheck, color: '#7C3AED' },
   ];
 
   const navItems = role === 'Teacher' ? teacherNavItems : adminNavItems;
 
   return (
-    <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col h-screen fixed left-0 top-0 z-30 border-r border-slate-800 shadow-xl">
+    <>
+      {open && (
+        <button
+          type="button"
+          aria-label="Close menu"
+          className="fixed inset-0 bg-slate-950/50 z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
+    <aside
+      className={`w-72 max-w-[85vw] bg-slate-900 text-slate-300 flex flex-col h-screen fixed left-0 top-0 z-50 border-r border-slate-800 shadow-xl transform transition-transform duration-300 ease-out ${
+        open ? 'translate-x-0' : '-translate-x-full'
+      } lg:translate-x-0 lg:w-64`}
+    >
       {/* Brand Header */}
       <div className="p-5 flex items-center gap-3 border-b border-slate-800 bg-slate-950">
-        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30 shrink-0">
           <GraduationCap className="w-6 h-6" />
         </div>
-        <div>
-          <h2 className="text-lg font-bold text-white tracking-wide">Sky Education</h2>
+        <div className="min-w-0 flex-1">
+          <h2 className="text-lg font-bold text-white tracking-wide truncate">Sky Education</h2>
           <span className="text-xs text-blue-400 font-medium">Management Portal</span>
         </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close sidebar"
+          className="lg:hidden p-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Navigation Links */}
@@ -74,7 +110,27 @@ export default function Sidebar({ activeTab, setActiveTab, role }) {
       </nav>
 
       {/* Footer Role Badge */}
-      <div className="p-4 border-t border-slate-800 bg-slate-950/50">
+      <div className="p-4 border-t border-slate-800 bg-slate-950/50 space-y-3">
+        <div className="flex bg-slate-800 p-1 rounded-lg text-xs lg:hidden">
+          <button
+            type="button"
+            onClick={() => setRole('Admin')}
+            className={`flex-1 py-1.5 rounded-md font-medium transition ${
+              role === 'Admin' ? 'bg-white text-blue-700 font-semibold' : 'text-slate-400'
+            }`}
+          >
+            Admin
+          </button>
+          <button
+            type="button"
+            onClick={() => setRole('Teacher')}
+            className={`flex-1 py-1.5 rounded-md font-medium transition ${
+              role === 'Teacher' ? 'bg-white text-indigo-700 font-semibold' : 'text-slate-400'
+            }`}
+          >
+            Teacher
+          </button>
+        </div>
         <div className="bg-slate-800/80 rounded-xl p-3 border border-slate-700/50 flex items-center justify-between">
           <div>
             <p className="text-xs text-slate-400">Current View</p>
@@ -84,5 +140,6 @@ export default function Sidebar({ activeTab, setActiveTab, role }) {
         </div>
       </div>
     </aside>
+    </>
   );
 }

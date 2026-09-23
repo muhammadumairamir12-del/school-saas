@@ -12,7 +12,11 @@ import {
   TrendingUp,
   CheckCircle2,
   Clock,
-  UserCheck
+  UserCheck,
+  Megaphone,
+  CalendarDays,
+  NotebookPen,
+  ClipboardCheck
 } from 'lucide-react';
 
 export default function Dashboard({ setActiveTab, onSelectStudent }) {
@@ -108,10 +112,10 @@ export default function Dashboard({ setActiveTab, onSelectStudent }) {
     <div className="space-y-6">
       
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+      <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-2xl p-4 sm:p-6 text-white shadow-lg relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Welcome to Sky Education</h2>
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Welcome to Sky Education</h2>
             <p className="text-blue-200 text-sm mt-1">
               {role === 'Admin' 
                 ? 'Overview of academic operations, live attendance, fee collections & student status.' 
@@ -252,6 +256,29 @@ export default function Dashboard({ setActiveTab, onSelectStudent }) {
 
         </div>
       )}
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {[
+          { id: 'notices', label: 'Notice Board', hint: 'School announcements', icon: Megaphone, tone: 'bg-sky-50 text-sky-700 border-sky-200' },
+          { id: 'timetable', label: 'Timetable', hint: 'Weekly class periods', icon: CalendarDays, tone: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+          { id: 'homework', label: 'Homework', hint: 'Assignments and due dates', icon: NotebookPen, tone: 'bg-orange-50 text-orange-700 border-orange-200' },
+          { id: 'exams', label: 'Exam Results', hint: 'Marks and grades', icon: ClipboardCheck, tone: 'bg-violet-50 text-violet-700 border-violet-200' },
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setActiveTab(item.id)}
+              className={`text-left rounded-2xl border p-4 shadow-xs hover:shadow-md transition ${item.tone}`}
+            >
+              <Icon className="w-5 h-5 mb-3" />
+              <p className="font-bold text-sm text-slate-800">{item.label}</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">{item.hint}</p>
+            </button>
+          );
+        })}
+      </div>
 
       {/* RECENT STUDENTS TABLE SUMMARY */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">

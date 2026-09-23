@@ -1,19 +1,47 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, User, Shield, BookOpen } from 'lucide-react';
+import { LogOut, User, Shield, BookOpen, Menu } from 'lucide-react';
 
-export default function Header() {
+const PAGE_TITLES = {
+  dashboard: 'Dashboard',
+  students: 'Students',
+  fees: 'Fees',
+  attendance: 'Attendance',
+  staff: 'Staff',
+  expenses: 'Expenses',
+  notices: 'Notices',
+  timetable: 'Timetable',
+  homework: 'Homework',
+  exams: 'Exams',
+};
+
+export default function Header({ onMenuClick, activeTab }) {
   const { currentUser, role, setRole, assignedClass, logout } = useAuth();
+  const pageTitle = PAGE_TITLES[activeTab] || 'Sky Education';
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 sticky top-0 z-20 px-6 flex items-center justify-between shadow-xs">
+    <header className="h-16 bg-white border-b border-slate-200 sticky top-0 z-20 px-3 sm:px-6 flex items-center justify-between shadow-xs gap-2">
       {/* Left Title & Branch info */}
-      <div className="flex items-center gap-3">
-        <h1 className="text-xl font-bold text-slate-800 tracking-tight">Sky Education</h1>
-        <span className="hidden sm:inline-block px-2.5 py-0.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full border border-blue-200">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          aria-label="Open menu"
+          className="lg:hidden shrink-0 p-2 -ml-1 rounded-xl text-slate-700 hover:bg-slate-100 active:bg-slate-200"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+        <div className="min-w-0">
+          <h1 className="text-base sm:text-xl font-bold text-slate-800 tracking-tight truncate">
+            <span className="lg:hidden">{pageTitle}</span>
+            <span className="hidden lg:inline">Sky Education</span>
+          </h1>
+          <p className="lg:hidden text-[11px] text-slate-400 leading-none">Sky Education</p>
+        </div>
+        <span className="hidden sm:inline-block px-2.5 py-0.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full border border-blue-200 shrink-0">
           Main Branch
         </span>
-        <span className="hidden md:inline-block text-xs text-slate-400">| Academic Year 2024-2025</span>
+        <span className="hidden md:inline-block text-xs text-slate-400 shrink-0">| Academic Year 2024-2025</span>
       </div>
 
       {/* Right User Actions & Role Switcher */}
