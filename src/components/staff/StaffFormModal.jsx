@@ -2,16 +2,20 @@ import React, { useState } from 'react';
 import { db } from '../../firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import Modal from '../Modal';
+import { CLASS_SECTIONS } from '../../schoolData';
 import { UserCheck, Phone, DollarSign, BookOpen, AlertCircle } from 'lucide-react';
 
 export default function StaffFormModal({ isOpen, onClose, staff = null }) {
   const isEdit = Boolean(staff && staff.id);
 
   const [name, setName] = useState(staff?.name || '');
-  const [role, setRole] = useState(staff?.role || 'Senior Teacher');
+  const [role, setRole] = useState(staff?.role || 'Class Incharge');
   const [contact, setContact] = useState(staff?.contact || '');
   const [salary, setSalary] = useState(staff?.salary || 40000);
   const [assignedClass, setAssignedClass] = useState(staff?.assignedClass || 'Class 10 - A');
+  const [subject, setSubject] = useState(staff?.subject || 'English');
+  const [email, setEmail] = useState(staff?.email || '');
+  const [status, setStatus] = useState(staff?.status || 'Active');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -35,6 +39,9 @@ export default function StaffFormModal({ isOpen, onClose, staff = null }) {
         contact,
         salary: Number(salary),
         assignedClass,
+        subject,
+        email,
+        status,
         updatedAt: new Date().toISOString(),
         ...(isEdit ? {} : { createdAt: new Date().toISOString() })
       };
@@ -86,12 +93,48 @@ export default function StaffFormModal({ isOpen, onClose, staff = null }) {
             onChange={(e) => setRole(e.target.value)}
             className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none bg-white"
           >
+            <option value="Class Incharge">Class Incharge</option>
+            <option value="Subject Teacher">Subject Teacher</option>
             <option value="Senior Teacher">Senior Teacher</option>
             <option value="Mathematics Teacher">Mathematics Teacher</option>
             <option value="Science Teacher">Science Teacher</option>
             <option value="English Teacher">English Teacher</option>
+            <option value="Computer Teacher">Computer Teacher</option>
+            <option value="Accountant">Accountant</option>
             <option value="Administrator">Administrator</option>
             <option value="Support Staff">Support Staff</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-slate-600 mb-1">Subject</label>
+          <input
+            type="text"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-slate-600 mb-1">Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-slate-600 mb-1">Status</label>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-purple-500 focus:outline-none"
+          >
+            <option>Active</option>
+            <option>Inactive</option>
           </select>
         </div>
 
@@ -133,11 +176,8 @@ export default function StaffFormModal({ isOpen, onClose, staff = null }) {
               onChange={(e) => setAssignedClass(e.target.value)}
               className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none bg-white"
             >
-              <option value="Class 10 - A">Class 10 - A</option>
-              <option value="Class 9 - B">Class 9 - B</option>
-              <option value="Class 8 - A">Class 8 - A</option>
-              <option value="Class 7 - C">Class 7 - C</option>
-              <option value="None / Admin">None / Admin</option>
+              <option value="">— Not assigned —</option>
+              {CLASS_SECTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
         </div>

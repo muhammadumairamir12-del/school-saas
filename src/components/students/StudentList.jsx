@@ -12,17 +12,19 @@ import {
   Eye, 
   UserCheck, 
   Filter,
-  GraduationCap
+  GraduationCap,
+  FileText
 } from 'lucide-react';
+import { exportFeeVoucherPDF } from '../../utils/pdfExport';
 
-export default function StudentList({ onSelectStudent }) {
+export default function StudentList({ onSelectStudent, initialQuery = '' }) {
   const { role } = useAuth();
 
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   
   // Search and Filter state
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(initialQuery);
   const [selectedClass, setSelectedClass] = useState('All');
   
   // Modal states
@@ -30,6 +32,10 @@ export default function StudentList({ onSelectStudent }) {
   const [editingStudent, setEditingStudent] = useState(null);
   const [deletingStudent, setDeletingStudent] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  useEffect(() => {
+    setSearchTerm(initialQuery);
+  }, [initialQuery]);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'students'), (snapshot) => {
@@ -186,6 +192,17 @@ export default function StudentList({ onSelectStudent }) {
                           className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition"
                         >
                           <Eye className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            const curMonth = new Date().toISOString().slice(0, 7);
+                            exportFeeVoucherPDF(student, `${curMonth}-10`, student.monthlyFee || 3500, curMonth);
+                          }}
+                          title="Download Fee Voucher PDF"
+                          className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition"
+                        >
+                          <FileText className="w-4 h-4" />
                         </button>
 
                         {role === 'Admin' && (

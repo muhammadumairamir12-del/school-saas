@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
-import { exportStudentProfilePDF } from '../../utils/pdfExport';
+import { exportStudentProfilePDF, exportFeeVoucherPDF } from '../../utils/pdfExport';
 import { 
   ArrowLeft, 
   Download, 
@@ -77,13 +77,27 @@ export default function StudentProfile({ student, onBack }) {
           Back to Students List
         </button>
 
-        <button
-          onClick={() => exportStudentProfilePDF(student, feeHistory, attendanceHistory)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-sm rounded-xl transition shadow-md"
-        >
-          <Download className="w-4 h-4" />
-          Export Profile PDF
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const currentMonth = new Date().toISOString().slice(0, 7);
+              const dueDate = `${currentMonth}-10`;
+              exportFeeVoucherPDF(student, dueDate, student.monthlyFee || 3500, currentMonth);
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white font-bold text-sm rounded-xl transition shadow-md"
+          >
+            <CreditCard className="w-4 h-4" />
+            Fee Voucher PDF
+          </button>
+
+          <button
+            onClick={() => exportStudentProfilePDF(student, feeHistory, attendanceHistory)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-sm rounded-xl transition shadow-md"
+          >
+            <Download className="w-4 h-4" />
+            Export Profile PDF
+          </button>
+        </div>
       </div>
 
       {/* Main Profile Header Card */}

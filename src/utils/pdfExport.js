@@ -229,3 +229,164 @@ export const exportExpenseReportPDF = (month, expenses = [], totalExpense = 0) =
 
   doc.save(`Expense_Report_${month}.pdf`);
 };
+
+// 6. Export Fee Voucher PDF (Challan)
+export const exportFeeVoucherPDF = (student, dueDate, amount, month) => {
+  const doc = new jsPDF('p', 'mm', 'a4');
+  
+  const drawVoucher = (yOffset, title) => {
+    // Header
+    doc.setFillColor(30, 91, 140);
+    doc.rect(14, yOffset, 182, 22, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SKY EDUCATION', 20, yOffset + 14);
+    
+    doc.setFontSize(12);
+    doc.text(`FEE VOUCHER - ${title}`, 190, yOffset + 14, { align: 'right' });
+    
+    // Voucher Meta
+    const voucherNo = 'VOU-' + Math.floor(100000 + Math.random() * 900000);
+    doc.setTextColor(30, 41, 59);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Voucher No: ${voucherNo}`, 14, yOffset + 30);
+    doc.text(`Issue Date: ${new Date().toLocaleDateString()}`, 196, yOffset + 30, { align: 'right' });
+    doc.text(`Due Date: ${dueDate}`, 196, yOffset + 36, { align: 'right' });
+
+    // Student Info
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(14, yOffset + 42, 182, 26, 2, 2, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Student Name: ${student.name || 'N/A'}`, 18, yOffset + 50);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Class/Section: ${student.classSection || 'N/A'}`, 18, yOffset + 58);
+    doc.text(`Student ID: ${student.id || 'N/A'}`, 120, yOffset + 58);
+
+    // Table
+    autoTable(doc, {
+      startY: yOffset + 74,
+      margin: { left: 14, right: 14 },
+      head: [['Description', 'Month', 'Amount']],
+      body: [
+        ['Monthly Tuition Fee', month, `RS. ${amount}`]
+      ],
+      headStyles: { fillColor: [30, 91, 140] },
+      theme: 'grid'
+    });
+
+    const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY : yOffset + 100;
+    
+    // Footer
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Total Payable: RS. ${amount}`, 196, finalY + 10, { align: 'right' });
+    
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Authorized Signature: __________________', 14, finalY + 25);
+    doc.text('Bank Stamp / Cashier: __________________', 196, finalY + 25, { align: 'right' });
+  };
+
+  // Draw Top Copy (Bank/School)
+  drawVoucher(10, 'SCHOOL COPY');
+  
+  // Draw separator
+  doc.setLineDashPattern([3, 3], 0);
+  doc.line(14, 148, 196, 148);
+  doc.setLineDashPattern([], 0);
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text('Tear Here', 105, 147, { align: 'center' });
+
+  // Draw Bottom Copy (Student)
+  drawVoucher(155, 'STUDENT COPY');
+
+  doc.save(`Fee_Voucher_${student.name?.replace(/\s+/g, '_') || 'Student'}_${month}.pdf`);
+};
+
+// 7. Export Daily Fee Report PDF
+export const exportDailyFeeReportPDF = (date, feeRecords = [], totalCollected = 0) => {
+  const doc = new jsPDF();
+  addHeader(doc, `Daily Collection - ${date}`);
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Collection Date: ${date}`, 14, 42);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Total Transactions: ${feeRecords.length}   |   Total Collected: RS. ${totalCollected.toLocaleString()}`, 14, 48);
+
+  let runningTotal = 0;
+  const tableData = feeRecords.map(f => {
+    runningTotal += Number(f.amount || 0);
+    return [
+      f.receiptNo || f.id,
+      f.studentName,
+      f.classSection,
+      f.month,
+      `RS. ${f.amount}`,
+      `RS. ${runningTotal}`
+    ];
+  });
+
+  autoTable(doc, {
+    startY: 54,
+    head: [['Receipt #', 'Student Name', 'Class', 'Month', 'Amount', 'Running Total']],
+    body: tableData.length ? tableData : [['-', 'No transactions recorded for this day', '-', '-', '-', '-']],
+    headStyles: { fillColor: [30, 91, 140] },
+    theme: 'striped'
+  });
+
+  doc.save(`Daily_Collection_${date}.pdf`);
+};
+
+// 8. Export Diary PDF
+export const exportDiaryPDF = (classSectionOrEntries, dateRangeOrClass, entriesList = []) => {
+  let classSection = 'All Classes';
+  let dateRange = 'All Dates';
+  let entries = [];
+
+  if (Array.isArray(classSectionOrEntries)) {
+    entries = classSectionOrEntries;
+    classSection = typeof dateRangeOrClass === 'string' ? dateRangeOrClass : 'All Classes';
+    dateRange = typeof entriesList === 'string' ? entriesList : 'All Dates';
+  } else {
+    classSection = classSectionOrEntries || 'All Classes';
+    dateRange = dateRangeOrClass || 'All Dates';
+    entries = Array.isArray(entriesList) ? entriesList : [];
+  }
+
+  const doc = new jsPDF();
+  addHeader(doc, 'Class Diary Report');
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Class: ${classSection}`, 14, 42);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Date Range: ${dateRange}`, 14, 48);
+
+  const tableData = entries.map(e => [
+    e.date,
+    e.topicTaught || '-',
+    e.homeworkAssigned || '-',
+    e.notes || '-'
+  ]);
+
+  autoTable(doc, {
+    startY: 54,
+    head: [['Date', 'Topic Taught', 'Homework Assigned', 'Notes']],
+    body: tableData.length ? tableData : [['No entries found', '-', '-', '-']],
+    headStyles: { fillColor: [59, 130, 246] }, // Blue accent
+    theme: 'grid',
+    styles: { overflow: 'linebreak', cellWidth: 'wrap' },
+    columnStyles: {
+      0: { cellWidth: 25 },
+      1: { cellWidth: 50 },
+      2: { cellWidth: 55 },
+      3: { cellWidth: 50 }
+    }
+  });
+
+  doc.save(`Diary_Report_${classSection.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
+};

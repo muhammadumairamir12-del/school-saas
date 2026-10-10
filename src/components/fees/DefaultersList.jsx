@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
-import { AlertCircle, Search, Filter, Phone, DollarSign } from 'lucide-react';
+import { AlertCircle, Search, Filter, Phone, DollarSign, FileText } from 'lucide-react';
+import { exportFeeVoucherPDF } from '../../utils/pdfExport';
 
 export default function DefaultersList({ onCollectFeeForStudent }) {
   const [students, setStudents] = useState([]);
@@ -162,13 +163,26 @@ export default function DefaultersList({ onCollectFeeForStudent }) {
                     </td>
                     <td className="py-3.5 px-5 font-extrabold text-red-600">RS. {student.monthlyFee}</td>
                     <td className="py-3.5 px-5 text-right">
-                      <button
-                        onClick={() => onCollectFeeForStudent && onCollectFeeForStudent(student)}
-                        className="py-1.5 px-3 bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs rounded-lg transition shadow-xs flex items-center gap-1 ml-auto"
-                      >
-                        <DollarSign className="w-3.5 h-3.5" />
-                        Collect Fee
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => {
+                            const dueDate = `${selectedMonth}-10`;
+                            exportFeeVoucherPDF(student, dueDate, student.monthlyFee || 3500, selectedMonth);
+                          }}
+                          title="Download Fee Voucher PDF"
+                          className="py-1.5 px-3 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-bold text-xs rounded-lg transition shadow-xs flex items-center gap-1"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-amber-600" />
+                          Voucher
+                        </button>
+                        <button
+                          onClick={() => onCollectFeeForStudent && onCollectFeeForStudent(student)}
+                          className="py-1.5 px-3 bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs rounded-lg transition shadow-xs flex items-center gap-1"
+                        >
+                          <DollarSign className="w-3.5 h-3.5" />
+                          Collect Fee
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

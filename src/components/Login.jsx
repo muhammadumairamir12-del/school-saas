@@ -1,52 +1,43 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { GraduationCap, ShieldCheck, UserCheck, Lock, Mail, Sparkles } from 'lucide-react';
+import { GraduationCap, ShieldCheck, UserCheck, Lock, Mail } from 'lucide-react';
 
 export default function Login() {
   const { loginWithDemo, loginWithEmail } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('Admin');
-  const [assignedClass, setAssignedClass] = useState('Class 10 - A');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleEmailLogin = async (e) => {
+  const handleEmailLogin = (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await loginWithEmail(email, password, role, assignedClass);
+      loginWithEmail(email, password, role);
     } catch (err) {
-      console.error(err);
-      setError('Failed to login. Incorrect credentials or authentication error.');
+      setError(err.message || 'Login failed');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleQuickDemo = async (selectedRole) => {
+  const handleQuickDemo = (selectedRole) => {
     setLoading(true);
-    try {
-      await loginWithDemo(selectedRole, selectedRole === 'Teacher' ? 'Class 10 - A' : '');
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    loginWithDemo(selectedRole);
+    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
-        
-        {/* Header Branding */}
-        <div className="bg-gradient-to-r from-blue-700 to-indigo-800 p-8 text-white text-center relative">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-md mb-3 border border-white/20 shadow-inner">
-            <GraduationCap className="w-10 h-10 text-white" />
+    <div className="min-h-screen bg-[#e8eef0] flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
+        <div className="bg-gradient-to-r from-[#064e4e] to-[#0a6666] p-8 text-white text-center">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-white/10 mb-3 border border-white/20">
+            <GraduationCap className="w-8 h-8 text-amber-300" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Sky Education</h1>
-          <p className="text-blue-200 text-sm mt-1">School Management System</p>
+          <h1 className="text-2xl font-bold tracking-tight">SkyEagle</h1>
+          <p className="text-teal-200 text-sm mt-1">School Management System</p>
         </div>
 
         <div className="p-8">
@@ -56,19 +47,18 @@ export default function Login() {
             </div>
           )}
 
-          {/* Role Selection Tabs */}
           <div className="mb-6">
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-              Select Demo Role
+              Role
             </label>
             <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
               <button
                 type="button"
                 onClick={() => setRole('Admin')}
-                className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
-                  role === 'Admin' 
-                    ? 'bg-white text-blue-700 shadow-sm font-semibold' 
-                    : 'text-slate-600 hover:text-slate-900'
+                className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm transition-all ${
+                  role === 'Admin'
+                    ? 'bg-white text-teal-800 shadow-sm font-semibold'
+                    : 'text-slate-600'
                 }`}
               >
                 <ShieldCheck className="w-4 h-4" />
@@ -77,10 +67,10 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setRole('Teacher')}
-                className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
-                  role === 'Teacher' 
-                    ? 'bg-white text-indigo-700 shadow-sm font-semibold' 
-                    : 'text-slate-600 hover:text-slate-900'
+                className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm transition-all ${
+                  role === 'Teacher'
+                    ? 'bg-white text-teal-800 shadow-sm font-semibold'
+                    : 'text-slate-600'
                 }`}
               >
                 <UserCheck className="w-4 h-4" />
@@ -89,93 +79,67 @@ export default function Login() {
             </div>
           </div>
 
-          {role === 'Teacher' && (
-            <div className="mb-4">
-              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                Assigned Class
-              </label>
-              <select
-                value={assignedClass}
-                onChange={(e) => setAssignedClass(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-              >
-                <option value="Class 10 - A">Class 10 - A</option>
-                <option value="Class 9 - B">Class 9 - B</option>
-              </select>
-            </div>
-          )}
-
-          {/* Login Form */}
           <form onSubmit={handleEmailLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Email Address</label>
+              <label className="block text-xs font-semibold text-slate-500 mb-1.5">Email</label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="email"
-                  placeholder="admin@skyeducation.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  placeholder="admin@skyeagle.edu"
+                  className="w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600"
                 />
               </div>
             </div>
-
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+              <label className="block text-xs font-semibold text-slate-500 mb-1.5">Password</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="password"
-                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  placeholder="Enter password"
+                  className="w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600"
                 />
               </div>
             </div>
-
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition duration-200 text-sm disabled:opacity-50"
+              className="w-full py-2.5 bg-[#0a6666] hover:bg-[#064e4e] text-white rounded-lg text-sm font-semibold transition disabled:opacity-60"
             >
-              Sign In
+              Sign in
             </button>
           </form>
 
-          {/* Quick Demo Access Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200"></div>
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-slate-400 font-medium">Or Quick Demo Login</span>
-            </div>
+          <div className="my-6 flex items-center gap-3">
+            <div className="flex-1 h-px bg-slate-200" />
+            <span className="text-xs text-slate-400 uppercase">or demo</span>
+            <div className="flex-1 h-px bg-slate-200" />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
+              disabled={loading}
               onClick={() => handleQuickDemo('Admin')}
-              className="flex items-center justify-center gap-1.5 py-2 px-3 border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg text-xs font-medium transition"
+              className="py-2.5 border border-teal-700 text-teal-800 rounded-lg text-sm font-medium hover:bg-teal-50 transition"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              Demo Admin
+              Admin Demo
             </button>
-
             <button
               type="button"
+              disabled={loading}
               onClick={() => handleQuickDemo('Teacher')}
-              className="flex items-center justify-center gap-1.5 py-2 px-3 border border-purple-300 bg-purple-50 hover:bg-purple-100 text-purple-800 rounded-lg text-xs font-medium transition"
+              className="py-2.5 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition"
             >
-              <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-              Demo Teacher
+              Teacher Demo
             </button>
           </div>
-
         </div>
-
       </div>
     </div>
   );

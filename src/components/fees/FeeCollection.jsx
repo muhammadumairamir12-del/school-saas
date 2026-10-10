@@ -3,7 +3,7 @@ import { db } from '../../firebase';
 import { collection, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import Modal from '../Modal';
 import ConfirmDialog from '../ConfirmDialog';
-import { exportFeeReceiptPDF, exportFeeReportPDF } from '../../utils/pdfExport';
+import { exportFeeReceiptPDF, exportFeeReportPDF, exportFeeVoucherPDF } from '../../utils/pdfExport';
 import { 
   CreditCard, 
   Plus, 
@@ -14,7 +14,8 @@ import {
   Calendar, 
   DollarSign,
   UserCheck,
-  AlertCircle
+  AlertCircle,
+  FileText
 } from 'lucide-react';
 
 export default function FeeCollection() {
@@ -25,6 +26,13 @@ export default function FeeCollection() {
   // Form State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingFee, setEditingFee] = useState(null);
+
+  // Fee Voucher State
+  const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
+  const [voucherStudentId, setVoucherStudentId] = useState('');
+  const [voucherMonth, setVoucherMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [voucherAmount, setVoucherAmount] = useState('3500');
+  const [voucherDueDate, setVoucherDueDate] = useState(`${new Date().toISOString().slice(0, 7)}-10`);
 
   const currentMonthStr = new Date().toISOString().slice(0, 7); // e.g. "2025-05"
   const todayStr = new Date().toISOString().split('T')[0];
@@ -160,13 +168,28 @@ export default function FeeCollection() {
           </div>
         </div>
 
-        <button
-          onClick={() => handleOpenModal(null)}
-          className="bg-pink-500 hover:bg-pink-600 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition shadow-md flex items-center gap-2 self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          Collect Fee Payment
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={() => {
+              if (students.length > 0 && !voucherStudentId) {
+                setVoucherStudentId(students[0].id);
+                setVoucherAmount(students[0].monthlyFee || 3500);
+              }
+              setIsVoucherModalOpen(true);
+            }}
+            className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-sm transition shadow-md flex items-center gap-2"
+          >
+            <FileText className="w-4 h-4" />
+            Issue Fee Voucher
+          </button>
+          <button
+            onClick={() => handleOpenModal(null)}
+            className="bg-pink-500 hover:bg-pink-600 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition shadow-md flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Collect Fee Payment
+          </button>
+        </div>
       </div>
 
       {/* Search Input */}
@@ -222,6 +245,17 @@ export default function FeeCollection() {
                     <td className="py-3.5 px-5 text-slate-500 text-xs">{fee.paymentDate}</td>
                     <td className="py-3.5 px-5 text-right">
                       <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => {
+                            const student = { id: fee.studentId, name: fee.studentName, classSection: fee.classSection };
+                            const dueDate = `${fee.month}-10`;
+                            exportFeeVoucherPDF(student, dueDate, fee.amount, fee.month);
+                          }}
+                          title="Download Fee Voucher PDF"
+                          className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition"
+                        >
+                          <FileText className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => exportFeeReceiptPDF(fee)}
                           title="Download Receipt PDF"
@@ -339,6 +373,106 @@ export default function FeeCollection() {
                 className="py-2 px-5 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-xl text-sm transition shadow-md disabled:opacity-50"
               >
                 {submitting ? 'Saving...' : (editingFee ? 'Update Fee' : 'Save & Generate Receipt')}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Issue Fee Voucher Modal */}
+      {isVoucherModalOpen && (
+        <Modal
+          isOpen={isVoucherModalOpen}
+          onClose={() => setIsVoucherModalOpen(false)}
+          title="Issue Fee Voucher (Challan)"
+          maxWidth="max-w-md"
+        >
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const selStudent = students.find(s => s.id === voucherStudentId) || students[0];
+              if (!selStudent) return;
+              exportFeeVoucherPDF(selStudent, voucherDueDate, Number(voucherAmount) || 3500, voucherMonth);
+              setIsVoucherModalOpen(false);
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Select Student *</label>
+              <select
+                required
+                value={voucherStudentId}
+                onChange={(e) => {
+                  setVoucherStudentId(e.target.value);
+                  const st = students.find(s => s.id === e.target.value);
+                  if (st) setVoucherAmount(st.monthlyFee || 3500);
+                }}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none bg-white"
+              >
+                {students.map(s => (
+                  <option key={s.id} value={s.id}>
+                    {s.name} ({s.classSection})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Billing Month *</label>
+              <input
+                type="month"
+                required
+                value={voucherMonth}
+                onChange={(e) => {
+                  setVoucherMonth(e.target.value);
+                  setVoucherDueDate(`${e.target.value}-10`);
+                }}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Fee Amount (RS.) *</label>
+              <div className="relative">
+                <DollarSign className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  type="number"
+                  required
+                  value={voucherAmount}
+                  onChange={(e) => setVoucherAmount(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Due Date *</label>
+              <div className="relative">
+                <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  type="date"
+                  required
+                  value={voucherDueDate}
+                  onChange={(e) => setVoucherDueDate(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsVoucherModalOpen(false)}
+                className="py-2 px-4 border border-slate-300 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="py-2 px-5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-sm transition shadow-md flex items-center gap-1.5"
+              >
+                <Download className="w-4 h-4" />
+                Generate Voucher PDF
               </button>
             </div>
           </form>

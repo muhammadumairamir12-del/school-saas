@@ -28,6 +28,12 @@ export default function MarkAttendance() {
     return () => unsub();
   }, []);
 
+  const availableClasses = React.useMemo(() => {
+    const fromStudents = Array.from(new Set(students.map(s => s.classSection).filter(Boolean)));
+    const defaults = ['Class 10 - A', 'Class 9 - B', 'Class 8 - A', 'Class 7 - C'];
+    return Array.from(new Set([...defaults, ...fromStudents])).sort();
+  }, [students]);
+
   // Sync Existing Attendance for selectedClass + selectedDate
   useEffect(() => {
     const docId = `${selectedDate}_${selectedClass}`;
@@ -138,10 +144,9 @@ export default function MarkAttendance() {
               disabled={role === 'Teacher'}
               className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="Class 10 - A">Class 10 - A</option>
-              <option value="Class 9 - B">Class 9 - B</option>
-              <option value="Class 8 - A">Class 8 - A</option>
-              <option value="Class 7 - C">Class 7 - C</option>
+              {availableClasses.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
             </select>
           </div>
         </div>

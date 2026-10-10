@@ -1,9 +1,51 @@
 @import "tailwindcss";
 
+:root {
+  --sky-primary: #0a6666;
+  --sky-primary-dark: #064e4e;
+  --sky-bg: #f0f4f5;
+  --sky-card: #ffffff;
+}
+
 @layer base {
   body {
-    background-color: #F8FAFC;
-    color: #1E293B;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--sky-bg);
+    color: #1e293b;
+    font-family: "DM Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
+
+  #root {
+    min-height: 100dvh;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+}
+
+@layer components {
+  .field {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    background: #fff;
+    outline: none;
+  }
+
+  .field:focus {
+    border-color: #0a6666;
+    box-shadow: 0 0 0 3px rgb(10 102 102 / 0.15);
+  }
+}
+
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
 }

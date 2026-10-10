@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { db, storage } from '../../firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { CLASS_SECTIONS } from '../../schoolData';
 import Modal from '../Modal';
 import { Upload, User, Phone, DollarSign, Calendar, AlertCircle } from 'lucide-react';
 
@@ -15,6 +16,8 @@ export default function StudentFormModal({ isOpen, onClose, student = null }) {
   const [admissionDate, setAdmissionDate] = useState(student?.admissionDate || new Date().toISOString().split('T')[0]);
   const [monthlyFee, setMonthlyFee] = useState(student?.monthlyFee || 3500);
   const [status, setStatus] = useState(student?.status || 'Active');
+  const [rollNo, setRollNo] = useState(student?.rollNo || '');
+  const [gender, setGender] = useState(student?.gender || 'Male');
   
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(student?.photoUrl || '');
@@ -65,6 +68,8 @@ export default function StudentFormModal({ isOpen, onClose, student = null }) {
         admissionDate,
         monthlyFee: Number(monthlyFee),
         status,
+        rollNo,
+        gender,
         photoUrl,
         updatedAt: new Date().toISOString(),
         ...(isEdit ? {} : { createdAt: new Date().toISOString() })
@@ -163,10 +168,31 @@ export default function StudentFormModal({ isOpen, onClose, student = null }) {
               onChange={(e) => setClassSection(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none bg-white"
             >
-              <option value="Class 10 - A">Class 10 - A</option>
-              <option value="Class 9 - B">Class 9 - B</option>
-              <option value="Class 8 - A">Class 8 - A</option>
-              <option value="Class 7 - C">Class 7 - C</option>
+              {CLASS_SECTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1">Roll No.</label>
+            <input
+              type="text"
+              value={rollNo}
+              onChange={(e) => setRollNo(e.target.value)}
+              placeholder="10A-01"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1">Gender</label>
+            <select
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500 focus:outline-none"
+            >
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
             </select>
           </div>
 
